@@ -7,6 +7,7 @@ def error_message_detail(error, error_detail: sys):
     error_message = f"Error occured in script: {exc_tb.tb_frame.f_code.co_filename}" \
                     f" \nat line number: {exc_tb.tb_lineno}" \
                     f" \nError message: {str(error)}"
+    logging.error(error_message)
     return error_message
 
 class CustomException(Exception):

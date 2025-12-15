@@ -41,20 +41,57 @@ class ModelTrainer:
             # Initialize models
             models = {
                 "Linear Regression": LinearRegression(),
-                "Ridge Regression": Ridge(),
-                "Lasso Regression": Lasso(),
-                "Support Vector Regressor": SVR(),
+                # "Ridge Regression": Ridge(),
+                # "Lasso Regression": Lasso(),
+                # "Support Vector Regressor": SVR(),
                 "Decision Tree Regressor": DecisionTreeRegressor(),
                 "Random Forest Regressor": RandomForestRegressor(),
-                "AdaBoost Regressor": AdaBoostRegressor(),
+                "Gradient Boosting": GradientBoostingRegressor(),
                 "XGBoost Regressor": XGBRegressor(),
+                "AdaBoost Regressor": AdaBoostRegressor(),
                 "CatBoost Regressor": CatBoostRegressor(verbose=False),
-                "K-Nearest Neighbors Regressor": KNeighborsRegressor()
+                # "K-Nearest Neighbors Regressor": KNeighborsRegressor()
             }
 
-            model_report: dict = evaluate_models(X_train=X_train, y_train=y_train, 
+            params={
+                "Decision Tree Regressor": {
+                    'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
+                    'max_features':['sqrt','log2'],
+                },
+                "Random Forest Regressor":{
+                    'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
+                    'max_features':['sqrt','log2',None],
+                    'n_estimators': [8,16,32,64,128,256]
+                },
+                "Gradient Boosting":{
+                    # 'loss':['squared_error', 'huber', 'absolute_error', 'quantile'],
+                    'learning_rate':[.1,.01,.05,.001],
+                    'subsample':[0.6,0.7,0.75,0.8,0.85,0.9],
+                    'criterion':['squared_error', 'friedman_mse'],
+                    'max_features':['sqrt','log2', None],
+                    'n_estimators': [8,16,32,64,128,256]
+                },
+                "Linear Regression":{},
+                "XGBoost Regressor":{
+                    'learning_rate':[.1,.01,.05,.001],
+                    'n_estimators': [8,16,32,64,128,256]
+                },
+                "CatBoost Regressor":{
+                    'depth': [6,8,10],
+                    'learning_rate': [0.01, 0.05, 0.1],
+                    'iterations': [30, 50, 100]
+                },
+                "AdaBoost Regressor":{
+                    'learning_rate':[.1,.01,0.5,.001],
+                    # 'loss':['linear','square','exponential'],
+                    'n_estimators': [8,16,32,64,128,256]
+                }
+            }            
+
+            logging.info("Evaluating models (with hyperparameter tuning)")
+            model_report, trained_models = evaluate_models(X_train=X_train, y_train=y_train, 
                                                 X_test=X_test, y_test=y_test, 
-                                                models=models)
+                                                models=models, param_grid=params)
             print_models_report(model_report=model_report)
             
             # Best model based on R^2 score
@@ -82,7 +119,7 @@ class ModelTrainer:
                 key=lambda name: candidate_models[name]["test_model_score"],
             )
             best_model_score = candidate_models[best_model_name]["test_model_score"]
-            best_model = models[best_model_name]
+            best_model = trained_models[best_model_name]
 
             logging.info(
                 f"Best model (after gap filter): {best_model_name} | "
