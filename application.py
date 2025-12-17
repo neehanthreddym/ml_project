@@ -1,7 +1,9 @@
 from flask import Flask, request, render_template
 from src.pipeline.predict_pipeline import CustomData, PredictPipeline
 
-app = Flask(__name__)
+application = Flask(__name__)
+
+app = application
 
 # Create route for homepage
 @app.route('/')
@@ -35,4 +37,4 @@ def predict_():
         return render_template('home.html', results=formatted_result)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0")
